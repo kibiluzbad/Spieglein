@@ -12,14 +12,16 @@ get %r{/(tt[0-9]+)} do |imdbid|
   # matches "GET /tt9999999"
   
   content_type "image/jpeg"
-  open(get_image("http://www.imdb.com/title/#{imdbid}"))
+  imagepath = get_image("http://www.imdb.com/title/#{imdbid}")
+  open(imagepath.nil? ? "http://i.media-imdb.com/images/SFaa265aa19162c9e4f3781fbae59f856d/nopicture/medium/film.png" : imagepath)
 end
 
 get %r{/(nm[0-9]+)} do |imdbid|
   # matches "GET /nm0000170"
   
   content_type "image/jpeg"
-  open(get_image("http://www.imdb.com/name/#{imdbid}"))
+  imagepath = get_image("http://www.imdb.com/name/#{imdbid}")
+  open(imagepath.nil? ? "http://i.media-imdb.com/images/SF984f0c61cc142e750d1af8e5fb4fc0c7/nopicture/small/name.png" : imagepath)
 end
 
 private 
