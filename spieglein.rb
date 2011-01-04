@@ -68,7 +68,7 @@ private
     if true #image.need_update
       imagepath = get_image("#{url}#{imdbid}")
       image.picture = open(imagepath || default_image).read
-      image.save!
+      #image.save!
     end
     
     image.picture
