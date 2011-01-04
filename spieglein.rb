@@ -13,7 +13,7 @@ configure :development do
     :host     => 'localhost',
     :username => 'root' ,
     :password => 'password',
-    :encoding => 'utf-8',
+    :encoding => 'ISO-8859-1',
     :database => 'spieglein_development'})  
 
   DataMapper::Logger.new(STDOUT, :debug)
