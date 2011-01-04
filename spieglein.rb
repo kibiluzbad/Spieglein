@@ -49,7 +49,7 @@ end
 
 get %r{/(tt[0-9]+)} do |imdbid|
   # matches "GET /tt9999999"
-  content_type "image/jpeg"
+  #content_type "image/jpeg"
   render_image(imdbid,"http://www.imdb.com/title/","http://i.media-imdb.com/images/SFaa265aa19162c9e4f3781fbae59f856d/nopicture/medium/film.png")
 end
 
