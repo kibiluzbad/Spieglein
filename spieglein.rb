@@ -49,7 +49,7 @@ end
 
 get %r{/(tt[0-9]+)} do |imdbid|
   # matches "GET /tt9999999"
-  #content_type "image/jpeg"
+  content_type "image/jpeg"
   render_image(imdbid,"http://www.imdb.com/title/","http://i.media-imdb.com/images/SFaa265aa19162c9e4f3781fbae59f856d/nopicture/medium/film.png")
 end
 
@@ -64,7 +64,8 @@ private
   def render_image(imdbid,url,default_image)
     image = Image.first_or_create(:imdbid=>imdbid)
   
-    if image.need_update
+    # FIX:Arrumar or problemas de encoding no PG  
+    if true #image.need_update
       imagepath = get_image("#{url}#{imdbid}")
       image.picture = open(imagepath || default_image).read
       image.save!
