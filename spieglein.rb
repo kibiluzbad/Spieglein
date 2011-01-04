@@ -70,7 +70,7 @@ private
       image.save!
     end
     
-    image.picture.read
+    image.picture
   end
   
   def get_image(url)
