@@ -20,7 +20,7 @@ configure :development do
 end
 
 configure :production do
-  DataMapper.setup(:default, ENV['DATABASE_URL']+"?encoding=UTF-8")  
+  DataMapper.setup(:default, ENV['DATABASE_URL']+"?encoding=ISO-8859-1")  
 end
 
 ## MODELS
