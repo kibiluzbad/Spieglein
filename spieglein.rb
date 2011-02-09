@@ -17,6 +17,7 @@ configure :development do
     :database => 'spieglein_development'})  
 
   DataMapper::Logger.new(STDOUT, :debug)
+
 end
 
 configure :production do
@@ -62,8 +63,8 @@ end
 
 private 
   def render_image(imdbid,url,default_image)
-    image = Image.first_or_create(:imdbid=>imdbid)
-  
+    #image = Image.first_or_create(:imdbid=>imdbid)
+    image = Image.new(:imdbid=>imdbid)
     # FIX:Arrumar or problemas de encoding no PG  
     if true #image.need_update
       imagepath = get_image("#{url}#{imdbid}")
