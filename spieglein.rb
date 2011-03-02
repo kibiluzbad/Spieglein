@@ -67,6 +67,7 @@ get %r{/(tt[0-9]+)/?(small|tiny|normal)?} do |imdbid,size|
   # matches "GET /tt9999999/normal"
   
   #content_type "image/jpeg"
+  response['Expires'] = (Time.now + 60*60*24*356*3).httpdate
   redirect render_image(imdbid,"http://www.imdb.com/title/","http://i.media-imdb.com/images/SFaa265aa19162c9e4f3781fbae59f856d/nopicture/medium/film.png",size)
 end
 
@@ -78,6 +79,7 @@ get %r{/(nm[0-9]+)/?(small|tiny|normal)} do |imdbid,size|
   # matches "GET /nm9999999/normal"
   
   #content_type "image/jpeg"
+  response['Expires'] = (Time.now + 60*60*24*356*3).httpdate
   redirect render_image(imdbid,"http://www.imdb.com/name/","http://i.media-imdb.com/images/SF984f0c61cc142e750d1af8e5fb4fc0c7/nopicture/small/name.png",size)
 end
 
