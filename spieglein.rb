@@ -10,13 +10,12 @@ require 'go_picasa_go'
 ## CONFIGURATION
 configure :development do
   DataMapper.setup(:default, {
-    :encoding => 'iso-8859-1',
-    :port     => 5432,
-    :adapter  => 'postgres',
-    :host     => '10.96.0.4',
-    :username => 'postgres' ,
+     :adapter  => 'mysql',
+    :host     => 'localhost',
+    :username => 'root' ,
     :password => 'password',
-    :database => 'spieglein_development'})  
+    :encoding => 'ISO-8859-1',
+    :database => 'spieglein_development'})
 
   DataMapper::Logger.new(STDOUT, :debug)
 
@@ -30,7 +29,7 @@ end
 class Image
   include DataMapper::Resource
   property :imdbid,     String, :length=>30, :key=>true
-  property :picture,    Binary, :lazy=>false
+  property :picture,    String, :length=>2000
   property :created_at, DateTime
   property :updated_at, DateTime
 
@@ -55,38 +54,58 @@ end
 
 get '/' do
   # matches "GET /"
+
   DataMapper.auto_migrate!
   "Spieglein is running!"  
 end
 
-get %r{/(tt[0-9]+)/?(small|tiny|normal)?} do |imdbid,size|
+get %r{/(tt[0-9]+)} do |imdbid|
   # matches "GET /tt9999999"
-  # matches "GET /tt9999999/"
-  # matches "GET /tt9999999/small"
-  # matches "GET /tt9999999/tiny"
-  # matches "GET /tt9999999/normal"
   
-  #content_type "image/jpeg"
   response['Expires'] = (Time.now + 60*60*24*356*3).httpdate
-  redirect render_image(imdbid,"http://www.imdb.com/title/","http://i.media-imdb.com/images/SFaa265aa19162c9e4f3781fbae59f856d/nopicture/medium/film.png",size)
+  redirect render_image(imdbid,"http://www.imdb.com/title/","http://i.media-imdb.com/images/SFaa265aa19162c9e4f3781fbae59f856d/nopicture/medium/film.png")
 end
 
-get %r{/(nm[0-9]+)/?(small|tiny|normal)} do |imdbid,size|
+get %r{/(nm[0-9]+)} do |imdbid|
   # matches "GET /nm9999999"
-  # matches "GET /nm9999999/"
-  # matches "GET /nm9999999/small"
-  # matches "GET /nm9999999/tiny"
-  # matches "GET /nm9999999/normal"
   
-  #content_type "image/jpeg"
   response['Expires'] = (Time.now + 60*60*24*356*3).httpdate
-  redirect render_image(imdbid,"http://www.imdb.com/name/","http://i.media-imdb.com/images/SF984f0c61cc142e750d1af8e5fb4fc0c7/nopicture/small/name.png",size)
+  render_image(imdbid,"http://www.imdb.com/name/","http://i.media-imdb.com/images/SF984f0c61cc142e750d1af8e5fb4fc0c7/nopicture/small/name.png")
 end
 
 private 
-  def render_image(imdbid,url,default_image,size)
+  def render_image(imdbid,url,default_image)
+    
+    image = Image.first_or_create({:imdbid => imdbid})
+    
+    if(image.need_update)
+      photo = save_on_picasa(imdbid,url,default_image)
+      
+      image.picture = photo.media_content_url
+      image.save!
+    end   
+    
+    image.picture
+  end
+  
+  def save_on_picasa(imdbid,url,default_image)
     user = User.new
 
+    album = get_picasa_album(user)
+    
+    photo = album.photos.select{|p| p.description == imdbid}.first
+    
+    if photo.nil?
+      imagepath = get_image("#{url}#{imdbid}")
+      data = open(imagepath || default_image)
+      
+      photo = create_photo_on_picasa(album,imdbid,data)
+    end
+    
+    photo
+  end
+  
+  def get_picasa_album(user)
     if(user.albums.nil? || user.albums.empty?)
       album = Picasa::DefaultAlbum.new
       album.user = user
@@ -95,30 +114,16 @@ private
       album.picasa_save!
     end
     
-    album = user.albums[0]
-    
-    photo = album.photos.select{|p| p.description == imdbid}.first
-    
-    #image = Image.first_or_create(:imdbid=>imdbid)
-    data = nil
-    #image = Image.new(:imdbid=>imdbid)
-    # FIX:Arrumar or problemas de encoding no PG  
-    if photo.nil?
-      imagepath = get_image("#{url}#{imdbid}")
-      data = open(imagepath || default_image)
-      
-      photo = Picasa::DefaultPhoto.new
-      photo.album = album
-      photo.description = imdbid
-      photo.file = data
-      photo.picasa_save!
-      #image.picture = data
-      #image.save
-    end
-    
-    size_map = {"tiny" => "media_thumbnail_url1","small" => "media_thumbnail_url2", "normal" => "media_thumbnail_url3", nil => "media_content_url"}
-    
-    photo.send("#{size_map[size]}")
+    user.albums[0]
+  end
+  
+  def create_photo_on_picasa(album,image,data)
+    photo = Picasa::DefaultPhoto.new
+    photo.album = album
+    photo.description = imdbid
+    photo.file = data
+    photo.picasa_save!
+    photo
   end
   
   def get_image(url)
