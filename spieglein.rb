@@ -70,7 +70,7 @@ get %r{/(nm[0-9]+)} do |imdbid|
   # matches "GET /nm9999999"
   
   response['Expires'] = (Time.now + 60*60*24*356*3).httpdate
-  render_image(imdbid,"http://www.imdb.com/name/","http://i.media-imdb.com/images/SF984f0c61cc142e750d1af8e5fb4fc0c7/nopicture/small/name.png")
+  redirect render_image(imdbid,"http://www.imdb.com/name/","http://i.media-imdb.com/images/SF984f0c61cc142e750d1af8e5fb4fc0c7/nopicture/small/name.png")
 end
 
 private 
