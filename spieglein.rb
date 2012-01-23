@@ -6,6 +6,7 @@ require 'dm-core'
 require 'dm-validations'
 require 'dm-migrations'
 require 'go_picasa_go'
+require 'picasa'
 
 ## CONFIGURATION
 configure :development do
@@ -51,6 +52,7 @@ class User < Picasa::DefaultUser
   end
 end
 
+DataMapper.finalize
 
 get '/' do
   # matches "GET /"
@@ -81,7 +83,7 @@ private
     if(image.need_update)
       photo = save_on_picasa(imdbid,url,default_image)
       
-      image.picture = photo.media_content_url
+      image.picture = photo[:photo]
       image.save!
     end   
     
@@ -93,7 +95,7 @@ private
 
     album = get_picasa_album(user)
     
-    photo = album.photos.select{|p| p.description == imdbid}.first
+    photo = album.select{|p| p[:title] == imdbid}.first
     
     if photo.nil?
       imagepath = get_image("#{url}#{imdbid}")
@@ -106,15 +108,8 @@ private
   end
   
   def get_picasa_album(user)
-    if(user.albums.nil? || user.albums.empty?)
-      album = Picasa::DefaultAlbum.new
-      album.user = user
-      album.title = "Images"
-      album.access = 'private'
-      album.picasa_save!
-    end
-    
-    user.albums[0]
+    # TODO: Create album if it doesn't exits
+    Picasa.photos(:google_user => 'moviescatalogonrails', :album_id => 5579584760398705137)[:photos]
   end
   
   def create_photo_on_picasa(album,image,data)
